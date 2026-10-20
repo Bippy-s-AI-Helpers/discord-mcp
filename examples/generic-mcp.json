@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "discord": {
+      "command": "npx",
+      "args": [ "-y", "@pasympa/discord-mcp@2.2.0" ],
+      "env": {
+        "DISCORD_TOKEN": "PASTE_YOUR_BOT_TOKEN_HERE",
+        "DISCORD_MCP_TOOLSETS": "discovery,messages",
+        "DISCORD_ALLOWED_GUILDS": "123456789012345678",
+        "DISCORD_MESSAGE_CONTENT": "false",
+        "DISCORD_GUILD_MEMBERS": "false"
+      }
+    }
+  }
+}

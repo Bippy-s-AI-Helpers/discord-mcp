@@ -1,0 +1,15 @@
+# Never commit secret material.
+.env
+.env.*
+!.env.example
+secrets/
+*.log
+
+# Runtime and dependency noise.
+node_modules/
+dist/
+tmp/
+
+# Operating system and editor noise.
+.DS_Store
+Thumbs.db
