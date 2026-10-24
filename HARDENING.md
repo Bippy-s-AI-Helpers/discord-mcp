@@ -1,12 +1,14 @@
-# discord-mcp
+# Hardening guide
 
-A curated, hardened install and configuration kit for the
+A curated, hardened install and configuration guide for the
 [@pasympa/discord-mcp](https://www.npmjs.com/package/@pasympa/discord-mcp)
 MCP server.
 
-This repository ships documentation and configuration only. It does not
-contain, vendor, or redistribute any upstream code. It exists to make a safe,
-minimal, auditable setup of the upstream Discord MCP server easy to repeat:
+This guide was written when the repository shipped documentation and
+configuration only. The repository now also carries a verified snapshot of
+the upstream 2.2.0 source (see README for scope, structure, and current
+status). The guide keeps its original job: a safe, minimal, auditable
+setup of the upstream Discord MCP server, easy to repeat:
 
 - a hardened default configuration (narrow toolsets, guild allowlist,
   privileged intents off, exact version pin)
@@ -14,11 +16,11 @@ minimal, auditable setup of the upstream Discord MCP server easy to repeat:
 - an optional idempotent install helper script
 - a verification checklist and troubleshooting table
 
-| Resource | Link |
-| --- | --- |
-| Upstream repository | https://github.com/PaSympa/discord-mcp |
+| Resource             | Link                                               |
+| -------------------- | -------------------------------------------------- |
+| Upstream repository  | https://github.com/PaSympa/discord-mcp             |
 | Upstream npm package | https://www.npmjs.com/package/@pasympa/discord-mcp |
-| This kit scope | install + configure + harden the upstream server only |
+| This guide's scope   | install + configure + harden the upstream server   |
 
 ## Verification basis
 
@@ -27,15 +29,15 @@ Every behavior documented here was checked against the upstream package
 upgrade the pin, re-read the upstream README: this kit only claims accuracy
 for the version it was verified against.
 
-| Fact | Value (verified 2026-10-20 against the npm registry) |
-| --- | --- |
-| Package | `@pasympa/discord-mcp` |
-| Version verified | `2.2.0` (npm `latest` dist-tag at time of writing) |
-| Upstream license | MIT (upstream `LICENSE`, (c) Léandre Moreau) |
-| Upstream repository | https://github.com/PaSympa/discord-mcp |
-| Runtime requirement | Node.js >= 22, npm installed; the server runs via `npx` |
-| Client library | discord.js v14, official MCP SDK |
-| Tool exposure | 14 selectable toolsets, 99 tools when everything is enabled |
+| Fact                | Value (verified 2026-10-20 against the npm registry)        |
+| ------------------- | ----------------------------------------------------------- |
+| Package             | `@pasympa/discord-mcp`                                      |
+| Version verified    | `2.2.0` (npm `latest` dist-tag at time of writing)          |
+| Upstream license    | MIT (upstream `LICENSE`, (c) Léandre Moreau)                |
+| Upstream repository | https://github.com/PaSympa/discord-mcp                      |
+| Runtime requirement | Node.js >= 22, npm installed; the server runs via `npx`     |
+| Client library      | discord.js v14, official MCP SDK                            |
+| Tool exposure       | 14 selectable toolsets, 99 tools when everything is enabled |
 
 ## About the upstream server
 
@@ -135,12 +137,12 @@ This kit's templates ship with both flags set to `false`.
 For the `discovery,messages` toolset profile this kit installs, grant the bot
 only what report posting needs:
 
-| Permission | Why |
-| --- | --- |
-| View Channels | discovery: list and read channel names |
-| Send Messages | deliver messages and replies |
-| Embed Links | render rich embeds (the report format this kit recommends) |
-| Read Message History | read recent messages and pinned items |
+| Permission           | Why                                                        |
+| -------------------- | ---------------------------------------------------------- |
+| View Channels        | discovery: list and read channel names                     |
+| Send Messages        | deliver messages and replies                               |
+| Embed Links          | render rich embeds (the report format this kit recommends) |
+| Read Message History | read recent messages and pinned items                      |
 
 Optional, only if you consciously want the behavior: Add Reactions, Pin
 Messages, Attach Files. Everything else (moderation, channel management,
@@ -231,7 +233,7 @@ check your client's docs for the exact file location) can start from
   "mcpServers": {
     "discord": {
       "command": "npx",
-      "args": [ "-y", "@pasympa/discord-mcp@2.2.0" ],
+      "args": ["-y", "@pasympa/discord-mcp@2.2.0"],
       "env": {
         "DISCORD_TOKEN": "PASTE_YOUR_BOT_TOKEN_HERE",
         "DISCORD_MCP_TOOLSETS": "discovery,messages",
@@ -261,13 +263,13 @@ opencode start.
 
 All verified against the upstream 2.2.0 README and source:
 
-| Variable | Default | What it controls | This kit's value |
-| --- | --- | --- | --- |
-| `DISCORD_TOKEN` | none (required) | The bot token. Without it the login step fails. | `0600` file referenced by `{file:...}`, or a client-injected value |
-| `DISCORD_MCP_TOOLSETS` | unset means all | Comma-separated toolsets to expose. `all` (or unset, or empty) exposes everything; unknown names fail startup. | `discovery,messages` |
-| `DISCORD_ALLOWED_GUILDS` | unset means all guilds | Comma-separated guild IDs the server may act on. When set, tool calls targeting any other guild are rejected, whether addressed by guild ID, channel ID, thread ID, webhook, or invite code. | exactly your guild ID(s) |
-| `DISCORD_MESSAGE_CONTENT` | `true` | Whether the server requests the Message Content privileged intent at connect. | `false` |
-| `DISCORD_GUILD_MEMBERS` | `true` | Whether the server requests the Server Members privileged intent at connect. | `false` |
+| Variable                  | Default                | What it controls                                                                                                                                                                             | This kit's value                                                   |
+| ------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `DISCORD_TOKEN`           | none (required)        | The bot token. Without it the login step fails.                                                                                                                                              | `0600` file referenced by `{file:...}`, or a client-injected value |
+| `DISCORD_MCP_TOOLSETS`    | unset means all        | Comma-separated toolsets to expose. `all` (or unset, or empty) exposes everything; unknown names fail startup.                                                                               | `discovery,messages`                                               |
+| `DISCORD_ALLOWED_GUILDS`  | unset means all guilds | Comma-separated guild IDs the server may act on. When set, tool calls targeting any other guild are rejected, whether addressed by guild ID, channel ID, thread ID, webhook, or invite code. | exactly your guild ID(s)                                           |
+| `DISCORD_MESSAGE_CONTENT` | `true`                 | Whether the server requests the Message Content privileged intent at connect.                                                                                                                | `false`                                                            |
+| `DISCORD_GUILD_MEMBERS`   | `true`                 | Whether the server requests the Server Members privileged intent at connect.                                                                                                                 | `false`                                                            |
 
 Details worth knowing (verified):
 
@@ -462,20 +464,20 @@ For anything posted on a schedule or by an assistant on your behalf:
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| First tool call fails; gateway close code `4014` | A privileged intent was requested but disabled in the Developer Portal | Set `DISCORD_MESSAGE_CONTENT=false` / `DISCORD_GUILD_MEMBERS=false` (or enable the portal toggles deliberately) and restart |
-| Login to READY times out (~30 s) | Wrong token, or the intent situation above | Fix the token file; apply the `4014` fix; restart |
-| Error at startup: `Invalid DISCORD_MCP_TOOLSETS: unknown toolset(s) ...` | Misspelled toolset name (fails closed by design) | Check spelling against the 14-name list in this README |
-| Every tool is visible despite `DISCORD_MCP_TOOLSETS` | The value was empty (counts as unset) or contained `all` | Set the explicit list `discovery,messages` and restart |
-| A DM appears as a reachable target | The `dm` toolset is enabled via `all`, empty value, or omission | Remove `dm` from `DISCORD_MCP_TOOLSETS` immediately (unset or empty means all) |
-| Tool call rejected mentioning `DISCORD_ALLOWED_GUILDS` | The call targeted a guild outside the allowlist (working as intended) | If unintended, fix the channel/guild ID in the prompt; do not loosen the allowlist casually |
-| `Channel ... is not a message-capable guild channel` | A DM channel or non-text channel ID was passed to a guild message tool | Use a text/announcement channel ID from `discord_list_channels` |
-| Messages from other people read as empty content | The portal's Message Content toggle is off (data access is portal-gated, not flag-gated) | Enable the portal toggle if you genuinely need it, or work without message bodies |
-| Member listing fails | The portal's Server Members toggle is off | Same decision as above; report bots usually do not need it |
-| Configuration changes do nothing | MCP config loads at client startup only | Restart the MCP client, then re-run the read-only pass |
-| First start is slow or the client times out | `npx` is downloading the package on first use | Pre-warm the cache with `npm view @pasympa/discord-mcp@2.2.0` or raise the client's MCP startup timeout |
-| `.env` values not picked up | The `.env` file is not in the working directory the client spawns the server from | Prefer the `{file:...}` / injected-secret pattern, or place `.env` beside the server's run directory |
+| Symptom                                                                  | Likely cause                                                                             | Fix                                                                                                                         |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| First tool call fails; gateway close code `4014`                         | A privileged intent was requested but disabled in the Developer Portal                   | Set `DISCORD_MESSAGE_CONTENT=false` / `DISCORD_GUILD_MEMBERS=false` (or enable the portal toggles deliberately) and restart |
+| Login to READY times out (~30 s)                                         | Wrong token, or the intent situation above                                               | Fix the token file; apply the `4014` fix; restart                                                                           |
+| Error at startup: `Invalid DISCORD_MCP_TOOLSETS: unknown toolset(s) ...` | Misspelled toolset name (fails closed by design)                                         | Check spelling against the 14-name list in this README                                                                      |
+| Every tool is visible despite `DISCORD_MCP_TOOLSETS`                     | The value was empty (counts as unset) or contained `all`                                 | Set the explicit list `discovery,messages` and restart                                                                      |
+| A DM appears as a reachable target                                       | The `dm` toolset is enabled via `all`, empty value, or omission                          | Remove `dm` from `DISCORD_MCP_TOOLSETS` immediately (unset or empty means all)                                              |
+| Tool call rejected mentioning `DISCORD_ALLOWED_GUILDS`                   | The call targeted a guild outside the allowlist (working as intended)                    | If unintended, fix the channel/guild ID in the prompt; do not loosen the allowlist casually                                 |
+| `Channel ... is not a message-capable guild channel`                     | A DM channel or non-text channel ID was passed to a guild message tool                   | Use a text/announcement channel ID from `discord_list_channels`                                                             |
+| Messages from other people read as empty content                         | The portal's Message Content toggle is off (data access is portal-gated, not flag-gated) | Enable the portal toggle if you genuinely need it, or work without message bodies                                           |
+| Member listing fails                                                     | The portal's Server Members toggle is off                                                | Same decision as above; report bots usually do not need it                                                                  |
+| Configuration changes do nothing                                         | MCP config loads at client startup only                                                  | Restart the MCP client, then re-run the read-only pass                                                                      |
+| First start is slow or the client times out                              | `npx` is downloading the package on first use                                            | Pre-warm the cache with `npm view @pasympa/discord-mcp@2.2.0` or raise the client's MCP startup timeout                     |
+| `.env` values not picked up                                              | The `.env` file is not in the working directory the client spawns the server from        | Prefer the `{file:...}` / injected-secret pattern, or place `.env` beside the server's run directory                        |
 
 ## Version pinning and upgrades
 
@@ -496,42 +498,66 @@ floats. This kit pins the exact version instead:
 
 ## Repository contents
 
-| Path | What it is |
-| --- | --- |
-| `README.md` | This document |
-| `examples/opencode.jsonc.example` | Hardened MCP entry, opencode configuration style |
-| `examples/generic-mcp.json` | Same profile for generic `mcpServers` clients |
-| `examples/README.md` | How to adapt the templates, plus a VS Code style variant |
-| `.env.example` | Placeholder-only environment file for the `.env` workflow |
-| `install/install.sh` | Optional POSIX helper: prerequisite checks, token store bootstrap (nothing written without `--yes`), template printer |
-| `SECURITY.md` | Security policy for this kit and how to report issues |
-| `CHANGELOG.md` | Kit version history |
-| `LICENSE` | MIT license for this kit (the upstream package keeps its own MIT license) |
-| `.gitignore` | Keeps `.env`, secrets, and logs out of version control |
+| Path                              | What it is                                                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                       | This document                                                                                                         |
+| `examples/opencode.jsonc.example` | Hardened MCP entry, opencode configuration style                                                                      |
+| `examples/generic-mcp.json`       | Same profile for generic `mcpServers` clients                                                                         |
+| `examples/README.md`              | How to adapt the templates, plus a VS Code style variant                                                              |
+| `.env.example`                    | Placeholder-only environment file for the `.env` workflow                                                             |
+| `install/install.sh`              | Optional POSIX helper: prerequisite checks, token store bootstrap (nothing written without `--yes`), template printer |
+| `SECURITY.md`                     | Upstream security policy for the vendored source; kit-era policy archived at the end of this guide                    |
+| `CHANGELOG.md`                    | Upstream changelog plus repository-level kit milestones                                                               |
+| `LICENSE`                         | Upstream MIT license covering the vendored source snapshot                                                            |
+| `.gitignore`                      | Keeps `.env`, secrets, and logs out of version control                                                                |
 
 ## Attribution and scope
 
 - The upstream server is `@pasympa/discord-mcp` by PaSympa
   (https://github.com/PaSympa/discord-mcp), released under the MIT license
-  (upstream `LICENSE`, (c) Léandre Moreau). This kit is an independent set
-  of documentation and configuration; no upstream code is included, and
-  nothing in this kit implies affiliation with or endorsement by the
-  upstream author.
-- This kit installs and configures only the npm package
+  (upstream `LICENSE`, (c) Léandre Moreau). This guide was written as an
+  independent set of documentation and configuration at a stage when no
+  upstream code was included. The repository now carries a verified
+  snapshot of the upstream 2.2.0 source as well, and nothing in this
+  repository implies affiliation with or endorsement by the upstream
+  author.
+- This guide's install helper configures only the npm package
   `@pasympa/discord-mcp`. It does not reference or install any other
   project.
-- Report upstream bugs and vulnerabilities to the upstream project; this
-  repo's `SECURITY.md` explains the split.
+- Report upstream bugs and vulnerabilities to the upstream project; the
+  vendored `SECURITY.md` points at the upstream process, and the kit-era
+  policy is archived at the end of this guide.
 
 ## License
 
-This kit (documentation, templates, scripts) is MIT licensed,
-(c) 2026 Bippy's AI Helpers: see [LICENSE](LICENSE). The upstream package
-remains under its own MIT license with its own copyright holder, and is a
-runtime dependency you install from npm, not a redistribution in this
-repository.
+Kit-era additions (documentation, templates, scripts) are MIT licensed,
+(c) 2026 Bippy's AI Helpers. The repository's [LICENSE](LICENSE) is now the
+upstream MIT text covering the vendored source snapshot, and the upstream
+package remains under its own MIT license with its own copyright holder.
 
 ---
 
 Verified against `@pasympa/discord-mcp` `2.2.0` (npm `latest` dist-tag,
 MIT, https://github.com/PaSympa/discord-mcp) on 2026-10-20.
+
+## Security policy history: kit era
+
+`SECURITY.md` now carries the upstream policy for this source-bearing
+repository. The points below are the kit-era security policy from
+2026-10-20, kept for the operator-facing guidance that still applies; its
+scope statements describe the docs-only stage of this repository.
+
+- The token lives in a `0600` file inside a `0700` directory (or reaches
+  the server through a client-side secret-injection mechanism). It never
+  appears in a committed file, a log, a screenshot, a chat message, or a
+  ticket.
+- The configuration templates reference the token by file path; the raw
+  token does not live in repositories, gists, issue reports, or example
+  configs.
+- If a token is ever exposed: reset it immediately in the Discord
+  Developer Portal (Bot tab, Reset Token). That invalidates the old value.
+  Update the token file, restart the MCP client, and review the audit log
+  and the bot's own DM conversations for anything it did not intend.
+- Bots should carry least-privilege Discord permissions; see the "Bot
+  permissions (least privilege)" section of the README for the
+  report-posting baseline.

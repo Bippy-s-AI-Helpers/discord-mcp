@@ -1,3 +1,10 @@
+> **About this repository:** carries a verified snapshot of the upstream
+> [@pasympa/discord-mcp](https://github.com/PaSympa/discord-mcp) source at
+> v2.2.0 (provenance in LICENSE and CHANGELOG.md) with local channel
+> tooling extensions, plus the [HARDENING.md](HARDENING.md) guide,
+> ready-to-adapt client configuration examples under `examples/`, and an
+> idempotent install helper under `install/`.
+
 <div align="center">
 
 # Discord MCP Server

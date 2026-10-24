@@ -8,19 +8,19 @@ guild allowlist, intent flags off) is the point of the kit.
 
 ## Files
 
-| File | Use with |
-| --- | --- |
-| `opencode.jsonc.example` | opencode-style configuration (the `mcp` block of `~/.config/opencode/opencode.jsonc` and similar setups) |
-| `generic-mcp.json` | Any MCP client using the common `mcpServers` JSON shape |
-| `.env.example` (repo root) | The upstream server's own `.env` loading workflow (dotenv) |
+| File                       | Use with                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `opencode.jsonc.example`   | opencode-style configuration (the `mcp` block of `~/.config/opencode/opencode.jsonc` and similar setups) |
+| `generic-mcp.json`         | Any MCP client using the common `mcpServers` JSON shape                                                  |
+| `.env.example` (repo root) | The upstream server's own `.env` loading workflow (dotenv)                                               |
 
 ## Placeholders to replace
 
-| Placeholder | Meaning |
-| --- | --- |
-| `SECRETS_PATH_HERE` | Absolute path to a `0600` file holding only the raw bot token, inside a `0700` directory |
-| `PASTE_YOUR_BOT_TOKEN_HERE` | Your bot token (only in configs that have no secret-injection mechanism; tighten file permissions and keep the config out of repositories) |
-| `GUILD_ID_HERE` / `123456789012345678` | Your guild's snowflake ID (Discord: Settings, Advanced, Developer Mode, then right-click the server and Copy ID) |
+| Placeholder                            | Meaning                                                                                                                                    |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SECRETS_PATH_HERE`                    | Absolute path to a `0600` file holding only the raw bot token, inside a `0700` directory                                                   |
+| `PASTE_YOUR_BOT_TOKEN_HERE`            | Your bot token (only in configs that have no secret-injection mechanism; tighten file permissions and keep the config out of repositories) |
+| `GUILD_ID_HERE` / `123456789012345678` | Your guild's snowflake ID (Discord: Settings, Advanced, Developer Mode, then right-click the server and Copy ID)                           |
 
 ## opencode style (`opencode.jsonc.example`)
 
@@ -50,7 +50,7 @@ token; adapt the path/format to your client's documented schema):
   "servers": {
     "discord": {
       "command": "npx",
-      "args": [ "-y", "@pasympa/discord-mcp@2.2.0" ],
+      "args": ["-y", "@pasympa/discord-mcp@2.2.0"],
       "env": {
         "DISCORD_TOKEN": "${input:discord-token}",
         "DISCORD_MCP_TOOLSETS": "discovery,messages",

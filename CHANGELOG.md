@@ -1,5 +1,17 @@
 # Changelog
 
+## Kit milestones
+
+Repository-level milestones for this repository, separate from the upstream
+package versions documented in the sections below.
+
+- 1.0.0 (2026-10-20): initial public release of the hardened install and
+  configuration kit; documentation and configuration only.
+- 1.1.0 (2026-10-24): the repository also carries a verified source
+  snapshot of upstream 2.2.0 with local channel tooling extensions; the
+  kit guidance moved from README.md to HARDENING.md, with the kit-era
+  security guidance archived there.
+
 ## [2.2.0] - 2026-09-03
 
 ### Added
