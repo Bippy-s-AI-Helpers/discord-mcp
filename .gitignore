@@ -1,9 +1,19 @@
 node_modules/
 dist/
+
+# Never commit secret material.
 .env
+.env.*
+!.env.example
+secrets/
+*.log
+
+# Runtime and dependency noise.
+tmp/
 
 # OS / editor cruft
 .DS_Store
+Thumbs.db
 
 # Local Claude Code config & artifacts
 .claude/

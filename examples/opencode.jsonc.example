@@ -1,0 +1,46 @@
+// Hardened MCP client entry for @pasympa/discord-mcp, opencode configuration style.
+// Verification basis: upstream @pasympa/discord-mcp 2.2.0 (MIT, github.com/PaSympa/discord-mcp).
+//
+// HOW TO USE
+//   1. Copy the "discord" entry below into the "mcp" block of your opencode
+//      configuration file (commonly ~/.config/opencode/opencode.jsonc). Merge,
+//      do not replace unrelated entries.
+//   2. Replace SECRETS_PATH_HERE with the absolute path to your token file
+//      (a 0600-permission file containing only the raw bot token, e.g.
+//      /home/you/.config/secrets/DISCORD_BOT_TOKEN). The "{file:...}" pattern
+//      is an opencode load-time substitution: the token never lands in this
+//      config and nothing containing it should ever be committed.
+//   3. Replace GUILD_ID_HERE with your guild's snowflake ID (enable Discord's
+//      Developer Mode, right-click the server, Copy ID). Example placeholder:
+//      123456789012345678
+//   4. Restart opencode. MCP entries are read once at startup; nothing below
+//      takes effect before the restart.
+//
+// WHY THESE VALUES (see the kit README for the detailed rationale)
+//   @2.2.0 pin        exact-version upgrades: deliberate, audited per bump
+//   timeout 30000     matches the upstream 30 second gateway READY window
+//   discovery         list guilds/channels: read-only verification pass
+//   messages          read + send + embed: report posting with no management tools
+//   dm ABSENT         DM tools ignore guild boundaries; never load this toolset
+//   both flags false  no privileged gateway intents requested; portal toggles stay off
+//
+// NOTES
+//   - An empty or missing DISCORD_MCP_TOOLSETS would expose every toolset,
+//     including dm. Always keep the explicit list.
+//   - If you must inline the token instead of the {file:...} reference
+//     (clients without file substitution), be aware the token then lives in
+//     a plaintext config file on disk; tighten that file's permissions and
+//     keep it out of any repository, sync, or backup.
+"discord": {
+  "type": "local",
+  "command": [ "npx", "-y", "@pasympa/discord-mcp@2.2.0" ],
+  "enabled": true,
+  "timeout": 30000,
+  "environment": {
+    "DISCORD_TOKEN": "{file:SECRETS_PATH_HERE}",
+    "DISCORD_MCP_TOOLSETS": "discovery,messages",
+    "DISCORD_ALLOWED_GUILDS": "GUILD_ID_HERE",
+    "DISCORD_MESSAGE_CONTENT": "false",
+    "DISCORD_GUILD_MEMBERS": "false"
+  }
+}
