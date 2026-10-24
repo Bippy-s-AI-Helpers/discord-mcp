@@ -251,16 +251,16 @@ Data access is governed by the **portal toggles**, not by these flags: this serv
 
 ### Channels (8 tools)
 
-| Tool                                  | Description                              |
-| ------------------------------------- | ---------------------------------------- |
-| `discord_create_channel`              | Create a text, voice channel or category |
-| `discord_delete_channel`              | Delete a channel                         |
-| `discord_edit_channel`                | Edit name, topic, slowmode, NSFW flag    |
-| `discord_move_channel`                | Move a channel into/out of a category    |
-| `discord_clone_channel`               | Clone a channel with its permissions     |
-| `discord_set_channel_position`        | Set display position within a category   |
-| `discord_follow_announcement_channel` | Follow an announcement channel           |
-| `discord_lock_channel_permissions`    | Sync permissions with parent category    |
+| Tool                                  | Description                                                                                                       |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `discord_create_channel`              | Create a text, voice, announcement, forum, or category channel (parent category, topic, slowmode, NSFW, position) |
+| `discord_delete_channel`              | Delete a guild channel (dry-run by default; refuses DM channels)                                                  |
+| `discord_edit_channel`                | Edit name, topic, slowmode, NSFW flag; returns updated fields                                                     |
+| `discord_move_channel`                | Move a channel into/out of a category                                                                             |
+| `discord_clone_channel`               | Clone a channel with its permissions                                                                              |
+| `discord_set_channel_position`        | Set display position within a category                                                                            |
+| `discord_follow_announcement_channel` | Follow an announcement channel                                                                                    |
+| `discord_lock_channel_permissions`    | Sync permissions with parent category                                                                             |
 
 ### Channel Permissions (6 tools)
 
