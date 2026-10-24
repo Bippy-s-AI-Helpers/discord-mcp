@@ -195,7 +195,9 @@ export async function getGuildChannel(channelId: string): Promise<GuildChannel> 
   const id = validateId(channelId, "channel_id");
   const channel = await fetchChannelChecked(id);
   if (!channel || !(channel instanceof GuildChannel))
-    throw new Error(`Channel ${id} is not a guild channel or doesn't exist.`);
+    throw new Error(
+      `Channel ${id} is not a guild channel or doesn't exist (DM and thread channels are excluded).`,
+    );
   return channel;
 }
 

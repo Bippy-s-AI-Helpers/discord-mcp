@@ -1,14 +1,14 @@
-import { ChannelType, NewsChannel } from "discord.js";
+import { BaseGuildTextChannel, ChannelType, NewsChannel, ThreadOnlyChannel } from "discord.js";
 import { z } from "zod";
 import { discord, getGuildChannel, fetchChannelChecked } from "../client.js";
-import { defineTool, defineModule, snowflake, guildId, intIn } from "./define.js";
+import { defineTool, defineModule, snowflake, guildId, intIn, structured } from "./define.js";
 
 /** Tool definitions for guild channels: lifecycle, layout, following, and permission sync. */
 const tools = [
   defineTool({
     name: "discord_create_channel",
     description:
-      "Create a text channel, voice channel, or category in a server. Requires the Manage Channels permission. For forum channels use discord_create_forum_channel instead. Returns the new channel's name and ID.",
+      "Create a text, voice, announcement, forum, or category channel in a server, optionally nested under a category (category_id must be a category channel). Topic applies to text, announcement, and forum channels; slowmode, NSFW flag, and display position apply where Discord supports them. For forum channels with tags and layout options use discord_create_forum_channel instead. Requires the Manage Channels permission. Returns the created channel's id, name, type, parent_id, and topic.",
     annotations: {
       title: "Create channel",
       readOnlyHint: false,
@@ -18,45 +18,103 @@ const tools = [
     },
     schema: z.object({
       guild_id: guildId.describe("Discord server (guild) ID (snowflake) to create the channel in."),
-      name: z.string().describe("Name of the new channel (max 100 characters)."),
+      name: z.string().min(1).max(100).describe("Name of the new channel (1-100 characters)."),
       type: z
-        .enum(["text", "voice", "category"])
+        .enum(["text", "voice", "announcement", "forum", "category"])
         .optional()
         .describe("Channel type to create. Defaults to 'text'."),
       topic: z
         .string()
+        .max(1024)
         .optional()
-        .describe("Optional channel topic/description. Applies to text channels only."),
+        .describe(
+          "Optional channel topic/description (max 1024 characters). Applies to text, announcement, and forum channels only.",
+        ),
       category_id: snowflake
         .optional()
-        .describe("Optional category (snowflake) to nest the new channel under."),
+        .describe(
+          "Optional category channel (snowflake) to nest the new channel under. Must be a category; passing any other channel is rejected by Discord.",
+        ),
+      position: z
+        .int()
+        .min(0)
+        .optional()
+        .describe("Optional zero-based display position of the new channel in its category."),
+      nsfw: z
+        .boolean()
+        .optional()
+        .describe("Mark (true) or not mark (false) the new channel as age-restricted (NSFW)."),
+      rate_limit_per_second: intIn(0, 21600)
+        .optional()
+        .describe(
+          "Optional per-user message cooldown in seconds, 0-21600 (slowmode). Text and forum channels only.",
+        ),
     }),
-    handle: async ({ guild_id, name, type, topic, category_id }) => {
+    outputSchema: z.object({
+      id: snowflake,
+      name: z.string(),
+      type: z.enum(["text", "voice", "announcement", "forum", "category"]),
+      parent_id: z.string().nullable(),
+      topic: z.string().nullable(),
+    }),
+    handle: async ({
+      guild_id,
+      name,
+      type,
+      topic,
+      category_id,
+      position,
+      nsfw,
+      rate_limit_per_second,
+    }) => {
       const guild = await discord.guilds.fetch(guild_id);
       const typeMap: Record<string, ChannelType> = {
         text: ChannelType.GuildText,
         voice: ChannelType.GuildVoice,
+        announcement: ChannelType.GuildAnnouncement,
+        forum: ChannelType.GuildForum,
         category: ChannelType.GuildCategory,
       };
       const channelType = typeMap[type ?? "text"];
+      // Topic is accepted by Discord for text, announcement, and forum channels only.
+      const topicApplies =
+        channelType === ChannelType.GuildText ||
+        channelType === ChannelType.GuildAnnouncement ||
+        channelType === ChannelType.GuildForum;
       const created = await guild.channels.create({
         name,
         type: channelType as
-          ChannelType.GuildText | ChannelType.GuildVoice | ChannelType.GuildCategory,
-        topic: channelType === ChannelType.GuildText ? topic : undefined,
+          | ChannelType.GuildText
+          | ChannelType.GuildVoice
+          | ChannelType.GuildAnnouncement
+          | ChannelType.GuildForum
+          | ChannelType.GuildCategory,
+        topic: topicApplies ? topic : undefined,
         parent: category_id,
+        position,
+        nsfw,
+        rateLimitPerUser: rate_limit_per_second,
       });
-      return {
-        content: [
-          { type: "text", text: `✅ Channel #${created.name} created (id: ${created.id}).` },
-        ],
+      const createdTypeNames: Partial<Record<ChannelType, string>> = {
+        [ChannelType.GuildText]: "text",
+        [ChannelType.GuildVoice]: "voice",
+        [ChannelType.GuildAnnouncement]: "announcement",
+        [ChannelType.GuildForum]: "forum",
+        [ChannelType.GuildCategory]: "category",
       };
+      return structured({
+        id: created.id,
+        name: created.name,
+        type: createdTypeNames[created.type] ?? String(created.type),
+        parent_id: created.parentId ?? null,
+        topic: "topic" in created ? (created.topic ?? null) : null,
+      });
     },
   }),
   defineTool({
     name: "discord_delete_channel",
     description:
-      "Permanently delete a channel and all of its messages. IRREVERSIBLE. SAFE BY DEFAULT: dry_run is true unless explicitly set to false, so call it first to preview, then re-call with dry_run:false to actually delete. Requires the Manage Channels permission. An optional reason is recorded in the audit log.",
+      "Permanently delete a guild channel and all of its messages. IRREVERSIBLE. SAFE BY DEFAULT: dry_run is true unless explicitly set to false, so call it first to preview, then re-call with dry_run:false to actually delete. Requires the Manage Channels permission. DM channels are refused: only guild channels can be deleted with this tool. An optional reason is recorded in the audit log.",
     annotations: {
       title: "Delete channel",
       readOnlyHint: false,
@@ -78,6 +136,10 @@ const tools = [
       const channel = await fetchChannelChecked(channel_id);
       if (!channel) throw new Error("Channel not found.");
       const channelName = "name" in channel ? channel.name : channel.id;
+      if (channel.isDMBased())
+        throw new Error(
+          "Channel is a DM channel. Only guild channels can be deleted with this tool (DMs cannot be deleted by bots).",
+        );
       if (dry_run) {
         return {
           content: [
@@ -95,7 +157,7 @@ const tools = [
   defineTool({
     name: "discord_edit_channel",
     description:
-      "Update a channel's name, topic, slowmode, or NSFW flag. Only provided fields change; topic and slowmode apply to text channels only. Requires the Manage Channels permission. Returns a confirmation.",
+      "Update a guild channel's name, topic, slowmode, or NSFW flag and return the channel's updated fields (id, name, topic, rate_limit_per_second, nsfw, position, parent_id). Only provided fields change; topic and slowmode apply to text channels only. Threads and DM channels are refused: they are not guild channels, so thread edits belong to the thread/message tools. To move the channel between categories use discord_move_channel; to reorder it within a category use discord_set_channel_position. Requires the Manage Channels permission.",
     annotations: {
       title: "Edit channel",
       readOnlyHint: false,
@@ -105,15 +167,28 @@ const tools = [
     },
     schema: z.object({
       channel_id: snowflake.describe("ID (snowflake) of the channel to edit."),
-      name: z.string().optional().describe("New channel name (max 100 characters)."),
-      topic: z.string().optional().describe("New topic/description (text channels only)."),
+      name: z.string().min(1).max(100).optional().describe("New channel name (1-100 characters)."),
+      topic: z
+        .string()
+        .max(1024)
+        .optional()
+        .describe("New topic/description (max 1024 characters; text channels only)."),
       slowmode: intIn(0, 21600)
         .optional()
-        .describe("Per-user message cooldown in seconds, 0–21600. 0 disables slowmode."),
+        .describe("Per-user message cooldown in seconds, 0-21600. 0 disables slowmode."),
       nsfw: z
         .boolean()
         .optional()
         .describe("Mark (true) or unmark (false) the channel as age-restricted (NSFW)."),
+    }),
+    outputSchema: z.object({
+      id: snowflake,
+      name: z.string(),
+      topic: z.string().nullable(),
+      rate_limit_per_second: z.number().nullable(),
+      nsfw: z.boolean().nullable(),
+      position: z.number().nullable(),
+      parent_id: z.string().nullable(),
     }),
     handle: async ({ channel_id, name, topic, slowmode, nsfw }) => {
       const channel = await getGuildChannel(channel_id);
@@ -124,7 +199,25 @@ const tools = [
         editOptions.rateLimitPerUser = slowmode;
       if (nsfw !== undefined) editOptions.nsfw = nsfw;
       await channel.edit(editOptions);
-      return { content: [{ type: "text", text: `✅ Channel #${channel.name} updated.` }] };
+      const state: Record<string, unknown> = {
+        id: channel.id,
+        name: channel.name,
+        position: channel.position,
+        parent_id: channel.parentId ?? null,
+      };
+      // Text and announcement channels (BaseGuildTextChannel) and forum/media
+      // channels (ThreadOnlyChannel) expose topic, slowmode, and NSFW; categories
+      // and voice/stage channels do not, so they report null.
+      if (channel instanceof BaseGuildTextChannel || channel instanceof ThreadOnlyChannel) {
+        state.topic = channel.topic ?? null;
+        state.rate_limit_per_second = channel.rateLimitPerUser ?? null;
+        state.nsfw = channel.nsfw;
+      } else {
+        state.topic = null;
+        state.rate_limit_per_second = null;
+        state.nsfw = null;
+      }
+      return structured(state);
     },
   }),
   defineTool({
