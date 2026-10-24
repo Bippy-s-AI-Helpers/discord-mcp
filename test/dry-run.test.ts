@@ -20,6 +20,7 @@ test("delete_channel: default previews and never deletes; dry_run:false deletes 
   const fakeChannel = {
     name: "victim",
     guildId: GUILD,
+    isDMBased: () => false,
     delete: async (reason: unknown) => void deletions.push(reason),
   };
   mock.method(discord.channels, "fetch", async () => fakeChannel as never);
